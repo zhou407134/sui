@@ -242,9 +242,10 @@ function TransactionView({ txdata }: { txdata: DataType }) {
         : [getTransferSuiAmount(txdetails)];
     const txKindName = getTransactionKindName(txdetails);
     const sender = getTransactionSender(txdata);
-    const recipient =
-        getTransferObjectTransaction(txdetails) ||
-        getTransferSuiTransaction(txdetails);
+    const recipients = txdetails?.Pay?.recipients || [
+        getTransferObjectTransaction(txdetails)?.recipient ||
+            getTransferSuiTransaction(txdetails)?.recipient,
+    ];
     const txKindData = formatByTransactionKind(txKindName, txdetails, sender);
 
     const txEventData = txdata.events?.map(eventToDisplay);
@@ -313,7 +314,7 @@ function TransactionView({ txdata }: { txdata: DataType }) {
                   timestamp_ms: txdata.timestamp_ms,
               }
             : {}),
-        recipient: [...(recipient?.recipient ? [recipient.recipient] : [])],
+        recipient: recipients,
     };
     const GasStorageFees = {
         title: 'Gas & Storage Fees',
