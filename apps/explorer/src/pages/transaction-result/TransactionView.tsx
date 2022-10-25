@@ -24,6 +24,7 @@ import Longtext from '../../components/longtext/Longtext';
 import ModulesWrapper from '../../components/module/ModulesWrapper';
 import { type LinkObj, TxAddresses } from '../../components/table/TableCard';
 import { presentBN } from '../../utils/stringUtils';
+import { convertNumberToDate } from '../../utils/timeUtils';
 import SendReceiveView from './SendReceiveView';
 import TxLinks from './TxLinks';
 
@@ -426,9 +427,9 @@ function TransactionView({ txdata }: { txdata: DataType }) {
                                 {txdata.timestamp_ms && (
                                     <h3>
                                         <span>
-                                            {new Date(
+                                            {convertNumberToDate(
                                                 txdata.timestamp_ms
-                                            ).toUTCString()}
+                                            )}
                                         </span>
                                     </h3>
                                 )}
