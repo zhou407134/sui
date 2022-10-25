@@ -445,9 +445,7 @@ function TransactionView({ txdata }: { txdata: DataType }) {
                                         </div>
                                     </div>
                                 )}
-                                <div className={styles.txaddress}>
-                                    <SendReceiveView data={sendreceive} />
-                                </div>
+                                <SendReceiveView data={sendreceive} />
                             </section>
 
                             <section
