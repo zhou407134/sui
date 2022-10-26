@@ -34,8 +34,8 @@ use sui_types::messages::{
     TransactionKind, TransferObject,
 };
 use sui_types::object::Owner;
+use sui_types::query::EventQuery;
 use sui_types::query::TransactionQuery;
-use sui_types::query::{EventQuery, Ordering};
 use sui_types::sui_serde::Base64;
 use sui_types::SUI_FRAMEWORK_OBJECT_ID;
 
@@ -372,7 +372,7 @@ impl RpcExampleProvider {
                         json!("8n7y9+zMf7DVqvLCAi+Xd1qrSBa7vjWoF5keAEUxCbo="),
                     ),
                     ("limit", json!(100)),
-                    ("order", json!(Ordering::Ascending)),
+                    ("descending_order", json!(false)),
                 ],
                 json!(result),
             )],
@@ -500,7 +500,7 @@ impl RpcExampleProvider {
                     ),
                     ("cursor", json!("10:0")),
                     ("limit", json!(events.len())),
-                    ("order", json!(Ordering::Ascending)),
+                    ("descending_order", json!(false)),
                 ],
                 json!(page),
             )],

@@ -438,11 +438,10 @@
           }
         },
         {
-          "name": "order",
-          "description": "transaction query ordering",
-          "required": true,
+          "name": "descending_order",
+          "description": "query result ordering, default to false (ascending order), oldest record first.  ",
           "schema": {
-            "$ref": "#/components/schemas/Ordering"
+            "type": "boolean"
           }
         }
       ],
@@ -472,8 +471,8 @@
               "value": 1
             },
             {
-              "name": "order",
-              "value": "Ascending"
+              "name": "descending_order",
+              "value": false
             }
           ],
           "result": {
@@ -1188,11 +1187,10 @@
           }
         },
         {
-          "name": "order",
-          "description": "Transaction query ordering",
-          "required": true,
+          "name": "descending_order",
+          "description": "query result ordering, default to false (ascending order), oldest record first.  ",
           "schema": {
-            "$ref": "#/components/schemas/Ordering"
+            "type": "boolean"
           }
         }
       ],
@@ -1222,8 +1220,8 @@
               "value": 100
             },
             {
-              "name": "order",
-              "value": "Ascending"
+              "name": "descending_order",
+              "value": false
             }
           ],
           "result": {
@@ -3363,24 +3361,6 @@
           "ByImmutableReference",
           "ByMutableReference",
           "ByValue"
-        ]
-      },
-      "Ordering": {
-        "oneOf": [
-          {
-            "description": "Ascending order (oldest transaction first), transactions are causal ordered.",
-            "type": "string",
-            "enum": [
-              "Ascending"
-            ]
-          },
-          {
-            "description": "Descending order (latest transaction first), transactions are causal ordered.",
-            "type": "string",
-            "enum": [
-              "Descending"
-            ]
-          }
         ]
       },
       "Owner": {

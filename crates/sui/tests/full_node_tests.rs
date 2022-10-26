@@ -27,7 +27,7 @@ use sui_types::messages::{
     ExecuteTransactionRequest, ExecuteTransactionRequestType, ExecuteTransactionResponse,
 };
 use sui_types::object::{Object, ObjectRead, Owner, PastObjectRead};
-use sui_types::query::{EventQuery, Ordering, TransactionQuery};
+use sui_types::query::{EventQuery, TransactionQuery};
 use sui_types::{
     base_types::{ObjectID, SuiAddress, TransactionDigest},
     messages::TransactionInfoRequest,
@@ -739,12 +739,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
     };
 
     // query by sender
-    let params = rpc_params![
-        EventQuery::Sender(sender),
-        None::<u64>,
-        10,
-        Ordering::Ascending
-    ];
+    let params = rpc_params![EventQuery::Sender(sender), None::<u64>, 10, false];
 
     let events_by_sender: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
@@ -767,12 +762,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
     );
 
     // query by tx digest
-    let params = rpc_params![
-        EventQuery::Transaction(digest),
-        None::<u64>,
-        10,
-        Ordering::Ascending
-    ];
+    let params = rpc_params![EventQuery::Transaction(digest), None::<u64>, 10, false];
     let events_by_tx: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
         .await
@@ -797,7 +787,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         EventQuery::Recipient(Owner::AddressOwner(receiver)),
         None::<u64>,
         10,
-        Ordering::Ascending
+        false
     ];
     let events_by_recipient: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
@@ -816,7 +806,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         EventQuery::Object(transferred_object),
         None::<u64>,
         10,
-        Ordering::Ascending
+        false
     ];
     let events_by_object: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
@@ -841,7 +831,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         },
         None::<u64>,
         10,
-        Ordering::Ascending
+        false
     ];
     let events_by_module: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
@@ -869,7 +859,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         EventQuery::MoveEvent(struct_tag_str),
         None::<u64>,
         10,
-        Ordering::Ascending
+        false
     ];
     let events_by_sender: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
@@ -887,7 +877,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         },
         None::<u64>,
         10,
-        Ordering::Ascending
+        false
     ];
     let all_events: EventPage = jsonrpc_client
         .request("sui_getEvents", params)
