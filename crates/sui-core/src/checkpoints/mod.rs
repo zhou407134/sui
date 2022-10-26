@@ -639,6 +639,7 @@ impl CheckpointStore {
         // TODO: We should not schedule a cert if it has already been executed.
         handle_pending_cert.add_pending_certificates(
             fragment
+                .data
                 .certs
                 .iter()
                 .map(|(digest, cert)| (digest.transaction, Some(cert.clone())))
@@ -784,9 +785,9 @@ impl CheckpointStore {
 
             // Extract the diff
             let diff = if fragment.proposer.authority() == &self.name {
-                fragment.diff
+                fragment.data.diff
             } else {
-                fragment.diff.swap()
+                fragment.data.diff.swap()
             };
 
             if let Ok(contents) = reconstructed.global.checkpoint_items(
