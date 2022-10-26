@@ -33,6 +33,7 @@ import type {
     CertifiedTransaction,
     TransactionKindName,
     ExecutionStatusType,
+    Pay,
     SuiTransactionKind,
     SuiObjectRef,
     SuiEvent,
@@ -236,17 +237,37 @@ function ItemView({ data }: { data: TxItemView }) {
     );
 }
 
+const isPayType = (
+    txdetails: SuiTransactionKind
+): txdetails is { Pay: Pay } => {
+    return 'Pay' in txdetails;
+};
+
+const convertAmounts = (
+    amounts: (number | bigint | null)[]
+): bigint[] | undefined =>
+    amounts.every((amount) => amount)
+        ? amounts.map((amount) => BigInt(amount!))
+        : undefined;
+
 function TransactionView({ txdata }: { txdata: DataType }) {
     const txdetails = getTransactions(txdata)[0];
-    const amounts = txdetails.Pay
-        ? txdetails?.Pay.amounts
-        : [getTransferSuiAmount(txdetails)];
+    const amounts = isPayType(txdetails)
+        ? convertAmounts(txdetails.Pay.amounts)
+        : convertAmounts([getTransferSuiAmount(txdetails)]);
     const txKindName = getTransactionKindName(txdetails);
     const sender = getTransactionSender(txdata);
-    const recipients = txdetails?.Pay?.recipients || [
+
+    const recipient =
         getTransferObjectTransaction(txdetails)?.recipient ||
-            getTransferSuiTransaction(txdetails)?.recipient,
-    ];
+        getTransferSuiTransaction(txdetails)?.recipient;
+
+    const recipients = isPayType(txdetails)
+        ? txdetails.Pay.recipients
+        : recipient
+        ? [recipient]
+        : undefined;
+
     const txKindData = formatByTransactionKind(txKindName, txdetails, sender);
 
     const txEventData = txdata.events?.map(eventToDisplay);
@@ -436,12 +457,12 @@ function TransactionView({ txdata }: { txdata: DataType }) {
                                     <div className={styles.amountbox}>
                                         <div>Amount</div>
                                         <div>
-                                            {presentBN(
-                                                amounts.reduce(
-                                                    (x: number, y: number) =>
-                                                        x + y
-                                                )
-                                            )}
+                                            {amounts &&
+                                                presentBN(
+                                                    amounts.reduce(
+                                                        (x, y) => x + y
+                                                    )
+                                                )}
                                             <sup>SUI</sup>
                                         </div>
                                     </div>
