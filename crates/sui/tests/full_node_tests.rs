@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::ops::Neg;
-use std::str::FromStr;
 use std::{collections::BTreeMap, sync::Arc};
 
 use futures::future;
@@ -22,7 +21,7 @@ use sui_macros::*;
 use sui_node::SuiNode;
 use sui_types::base_types::{ObjectRef, SequenceNumber};
 use sui_types::event::BalanceChangeType;
-use sui_types::event::{Event, TransferType};
+use sui_types::event::Event;
 use sui_types::messages::{
     ExecuteTransactionRequest, ExecuteTransactionRequestType, ExecuteTransactionResponse,
 };
@@ -291,10 +290,10 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
             false,
         )
         .await?;
-    assert_eq!(all_events[0].tx_digest.unwrap(), digest);
+    assert_eq!(all_events[0].1.tx_digest.unwrap(), digest);
     let all_events = all_events
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(all_events.len(), 3);
     assert_eq!(
@@ -311,10 +310,10 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
         .state()
         .get_events(EventQuery::Sender(sender), None, 10, false)
         .await?;
-    assert_eq!(events_by_sender[0].tx_digest.unwrap(), digest);
+    assert_eq!(events_by_sender[0].1.tx_digest.unwrap(), digest);
     let events_by_sender = events_by_sender
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(events_by_sender.len(), 3);
     assert_eq!(
@@ -331,10 +330,10 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
         .state()
         .get_events(EventQuery::Transaction(digest), None, 10, false)
         .await?;
-    assert_eq!(events_by_tx[0].tx_digest.unwrap(), digest);
+    assert_eq!(events_by_tx[0].1.tx_digest.unwrap(), digest);
     let events_by_tx = events_by_tx
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(events_by_tx.len(), 3);
     assert_eq!(
@@ -356,10 +355,10 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
             false,
         )
         .await?;
-    assert_eq!(events_by_recipient[0].tx_digest.unwrap(), digest);
+    assert_eq!(events_by_recipient[0].1.tx_digest.unwrap(), digest);
     let events_by_recipient = events_by_recipient
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(events_by_recipient.len(), 1);
     assert_eq!(events_by_recipient, vec![recipient_event.clone()]);
@@ -369,10 +368,10 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
         .state()
         .get_events(EventQuery::Object(transferred_object), None, 10, false)
         .await?;
-    assert_eq!(events_by_object[0].tx_digest.unwrap(), digest);
+    assert_eq!(events_by_object[0].1.tx_digest.unwrap(), digest);
     let events_by_object = events_by_object
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(events_by_object.len(), 2);
     assert_eq!(
@@ -387,17 +386,17 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
         .get_events(
             EventQuery::MoveModule {
                 package: SUI_FRAMEWORK_OBJECT_ID,
-                module: "native".to_string(),
+                module: "transfer_object".to_string(),
             },
             None,
             10,
             false,
         )
         .await?;
-    assert_eq!(events_by_module[0].tx_digest.unwrap(), digest);
+    assert_eq!(events_by_module[0].1.tx_digest.unwrap(), digest);
     let events_by_module = events_by_module
         .into_iter()
-        .map(|envelope| envelope.event)
+        .map(|(_, envelope)| envelope.event)
         .collect::<Vec<_>>();
     assert_eq!(events_by_module.len(), 2);
     assert_eq!(
@@ -751,7 +750,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         .into_iter()
         .map(|envelope| envelope.event)
         .collect::<Vec<_>>();
-    assert_eq!(events_by_sender.data.len(), 3);
+    assert_eq!(events_by_sender.len(), 3);
     assert_eq!(
         events_by_sender,
         vec![
@@ -768,11 +767,12 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         .await
         .unwrap();
     assert_eq!(events_by_tx.data[0].tx_digest.unwrap(), digest);
-    let events_by_tx = events_by_tx.data
+    let events_by_tx = events_by_tx
+        .data
         .into_iter()
         .map(|envelope| envelope.event)
         .collect::<Vec<_>>();
-    assert_eq!(events_by_tx.data.len(), 3);
+    assert_eq!(events_by_tx.len(), 3);
     assert_eq!(
         events_by_tx,
         vec![
@@ -794,11 +794,12 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         .await
         .unwrap();
     assert_eq!(events_by_recipient.data[0].tx_digest.unwrap(), digest);
-    let events_by_recipient = events_by_recipient.data
+    let events_by_recipient = events_by_recipient
+        .data
         .into_iter()
         .map(|envelope| envelope.event)
         .collect::<Vec<_>>();
-    assert_eq!(events_by_recipient.data.len(), 1);
+    assert_eq!(events_by_recipient.len(), 1);
     assert_eq!(events_by_recipient, vec![recipient_event.clone()]);
 
     // query by object
@@ -813,11 +814,12 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         .await
         .unwrap();
     assert_eq!(events_by_object.data[0].tx_digest.unwrap(), digest);
-    let events_by_object = events_by_object.data
+    let events_by_object = events_by_object
+        .data
         .into_iter()
         .map(|envelope| envelope.event)
         .collect::<Vec<_>>();
-    assert_eq!(events_by_object.data.len(), 2);
+    assert_eq!(events_by_object.len(), 2);
     assert_eq!(
         events_by_object,
         vec![sender_event.clone(), recipient_event.clone()]
@@ -838,11 +840,12 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
         .await
         .unwrap();
     assert_eq!(events_by_module.data[0].tx_digest.unwrap(), digest);
-    let events_by_module = events_by_module.data
+    let events_by_module = events_by_module
+        .data
         .into_iter()
         .map(|envelope| envelope.event)
         .collect::<Vec<_>>();
-    assert_eq!(events_by_module.data.len(), 2);
+    assert_eq!(events_by_module.len(), 2);
     assert_eq!(
         events_by_module,
         vec![sender_event.clone(), recipient_event.clone()]

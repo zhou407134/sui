@@ -482,7 +482,7 @@ async fn test_get_fullnode_events() -> Result<(), anyhow::Error> {
         .get_objects_owned_by_address(cluster.accounts[2])
         .await
         .unwrap()
-        .first()
+        .last()
         .unwrap()
         .object_id;
 
@@ -492,7 +492,7 @@ async fn test_get_fullnode_events() -> Result<(), anyhow::Error> {
         .get_events(EventQuery::Object(object), None, Some(10), None)
         .await
         .unwrap();
-    assert_eq!(1, page.data.len());
+    assert_eq!(4, page.data.len());
 
     Ok(())
 }
