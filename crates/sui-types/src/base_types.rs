@@ -32,7 +32,7 @@ use crate::error::ExecutionError;
 use crate::error::ExecutionErrorKind;
 use crate::error::SuiError;
 use crate::object::{Object, Owner};
-use crate::sui_serde::Hex;
+use crate::sui_serde::{Hex, Bech32};
 use crate::sui_serde::Readable;
 use crate::sui_serde::{Base64, Encoding};
 use crate::waypoint::IntoPoint;
@@ -128,8 +128,8 @@ pub const SUI_ADDRESS_LENGTH: usize = ObjectID::LENGTH;
     Eq, Default, PartialEq, Ord, PartialOrd, Copy, Clone, Hash, Serialize, Deserialize, JsonSchema,
 )]
 pub struct SuiAddress(
-    #[schemars(with = "Hex")]
-    #[serde_as(as = "Readable<Hex, _>")]
+    #[schemars(with = "Bech32")]
+    #[serde_as(as = "Readable<Bech32, _>")]
     [u8; SUI_ADDRESS_LENGTH],
 );
 
@@ -151,7 +151,7 @@ impl SuiAddress {
     where
         S: serde::ser::Serializer,
     {
-        serializer.serialize_str(&key.map(encode_bytes_hex).unwrap_or_default())
+        serializer.serialize_str(&key.map(Bech32::encode).unwrap_or_default())
     }
 
     pub fn optional_address_from_hex<'de, D>(
@@ -161,8 +161,10 @@ impl SuiAddress {
         D: serde::de::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        let value = decode_bytes_hex(&s).map_err(serde::de::Error::custom)?;
-        Ok(Some(value))
+        let value = Bech32::decode(&s).map_err(serde::de::Error::custom)?;
+        let mut array = [0u8; SUI_ADDRESS_LENGTH];
+        array.copy_from_slice(&value[..SUI_ADDRESS_LENGTH]);
+        Ok(Some(SuiAddress(array)))
     }
 
     pub fn to_inner(self) -> [u8; SUI_ADDRESS_LENGTH] {

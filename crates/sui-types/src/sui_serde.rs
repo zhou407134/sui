@@ -4,7 +4,7 @@
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use base64ct::Encoding as _;
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::account_address::AccountAddress;
@@ -15,7 +15,7 @@ use serde::ser::{Error as SerError, Serializer};
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{Bytes, DeserializeAs, SerializeAs};
-
+use bech32::u5;
 use crate::base_types::{decode_bytes_hex, encode_bytes_hex};
 use crate::crypto::{AggregateAuthoritySignature, AuthoritySignature, KeypairTraits};
 
@@ -348,5 +348,58 @@ impl<'de> DeserializeAs<'de, AggregateAuthoritySignature> for AggrAuthSignature 
         let sig_bytes = Base64::decode(&s).map_err(to_custom_error::<'de, D, _>)?;
         AggregateAuthoritySignature::from_bytes(&sig_bytes[..])
             .map_err(to_custom_error::<'de, D, _>)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, JsonSchema)]
+#[serde(try_from = "String")]
+pub struct Bech32(String);
+
+impl TryFrom<String> for Bech32 {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        // Make sure the value is valid base64 string.
+        bech32::decode(&value)?;
+        Ok(Self(value))
+    }
+}
+
+impl Encoding for Bech32 {
+    fn decode(s: &str) -> Result<Vec<u8>, anyhow::Error> {
+        match bech32::decode(s) {
+            Ok((hrp, data, variant)) => {
+                if hrp != "sui" || variant != bech32::Variant::Bech32 {
+                    bail!("Invalid hrp or variant");
+                }
+                Ok(data.iter().map(|x| u8::from(*x)).collect())
+            },
+            Err(e) => Err(anyhow!(e))
+         }
+    }
+
+    fn encode<T: AsRef<[u8]>>(data: T) -> String {
+        bech32::encode("sui", data.as_ref().iter().map(|x| u8::from(*x)).collect::<u5>().as_ref(), bech32::Variant::Bech32).unwrap()
+    }
+}
+
+impl<'de> DeserializeAs<'de, Vec<u8>> for Bech32 {
+    fn deserialize_as<D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Self::decode(&s).map_err(to_custom_error::<'de, D, _>)
+    }
+}
+
+impl<T> SerializeAs<T> for Bech32
+where
+    T: AsRef<[u8]>,
+{
+    fn serialize_as<S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        Self::encode(value).serialize(serializer)
     }
 }
