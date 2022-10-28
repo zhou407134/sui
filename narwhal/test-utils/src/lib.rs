@@ -691,7 +691,15 @@ impl CommitteeFixture {
 
         self.authorities
             .iter()
-            .map(|a| a.header(&committee))
+            .map(|a| a.header_with_round(&committee, 1))
+            .collect()
+    }
+
+    pub fn headers_next_round(&self) -> Vec<Header> {
+        let committee = self.committee();
+        self.authorities
+            .iter()
+            .map(|a| a.header_with_round(&committee, 2))
             .collect()
     }
 
@@ -828,10 +836,34 @@ impl AuthorityFixture {
             .unwrap()
     }
 
+    pub fn header_with_round(&self, committee: &Committee, round: Round) -> Header {
+        self.header_builder_with_round(committee, round)
+            .payload(Default::default())
+            .build(&self.keypair)
+            .unwrap()
+    }
+
     pub fn header_builder(&self, committee: &Committee) -> types::HeaderBuilder {
         types::HeaderBuilder::default()
             .author(self.public_key())
             .round(1)
+            .epoch(committee.epoch)
+            .parents(
+                Certificate::genesis(committee)
+                    .iter()
+                    .map(|x| x.digest())
+                    .collect(),
+            )
+    }
+
+    pub fn header_builder_with_round(
+        &self,
+        committee: &Committee,
+        round: Round,
+    ) -> types::HeaderBuilder {
+        types::HeaderBuilder::default()
+            .author(self.public_key())
+            .round(round)
             .epoch(committee.epoch)
             .parents(
                 Certificate::genesis(committee)
