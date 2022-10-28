@@ -1,5 +1,11 @@
 # @mysten/wallet-standard
 
+## 0.2.0
+
+### Minor Changes
+
+- 56de8448f: Update wallet standard adapters to use new wallet registration logic.
+
 ## 0.1.2
 
 ### Patch Changes
