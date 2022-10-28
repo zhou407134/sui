@@ -6,6 +6,7 @@ module sui::object {
     use std::bcs;
     use sui::tx_context::{Self, TxContext};
 
+    friend sui::coin;
     friend sui::dynamic_field;
     friend sui::dynamic_object_field;
     friend sui::sui_system;
@@ -16,6 +17,9 @@ module sui::object {
 
     /// The hardcoded ID for the singleton Sui System State Object.
     const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
+
+    /// The hardcoded ID for the singleton Sui coin registry
+    const SUI_COIN_REGISTRY_OBJECT_ID: address = @0x6;
 
     /// Error from `address_from_bytes` when it is supplied too many or too few bytes.
     const EAddressParseError: u64 = 0;
@@ -79,6 +83,14 @@ module sui::object {
     public(friend) fun sui_system_state(): UID {
         UID {
             id: ID { bytes: SUI_SYSTEM_STATE_OBJECT_ID },
+        }
+    }
+
+    /// Create the `UID` for the singleton `SuiCoinRegistry` object.
+    /// This should only be called once from `coin`.
+    public(friend) fun sui_coin_registry(): UID {
+        UID {
+            id: ID { bytes: SUI_COIN_REGISTRY_OBJECT_ID },
         }
     }
 

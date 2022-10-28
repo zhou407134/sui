@@ -11,9 +11,11 @@
 
 <pre><code><b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="epoch_time_lock.md#0x2_epoch_time_lock">0x2::epoch_time_lock</a>;
 <b>use</b> <a href="sui.md#0x2_sui">0x2::sui</a>;
 <b>use</b> <a href="sui_system.md#0x2_sui_system">0x2::sui_system</a>;
+<b>use</b> <a href="transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="validator.md#0x2_validator">0x2::validator</a>;
 </code></pre>
@@ -95,7 +97,9 @@ all the information we need in the system.
     validator_gas_prices: <a href="">vector</a>&lt;u64&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> sui_supply = <a href="sui.md#0x2_sui_new">sui::new</a>(ctx);
+    <b>let</b> coin_registry = <a href="coin.md#0x2_coin_registry">coin::registry</a>();
+    <b>let</b> sui_supply = <a href="sui.md#0x2_sui_new">sui::new</a>(&<b>mut</b> coin_registry, ctx);
+    <a href="transfer.md#0x2_transfer_share_object">transfer::share_object</a>(coin_registry);
     <b>let</b> storage_fund = <a href="balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(&<b>mut</b> sui_supply, <a href="genesis.md#0x2_genesis_INIT_STORAGE_FUND">INIT_STORAGE_FUND</a>);
     <b>let</b> validators = <a href="_empty">vector::empty</a>();
     <b>let</b> count = <a href="_length">vector::length</a>(&validator_pubkeys);

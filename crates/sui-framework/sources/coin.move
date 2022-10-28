@@ -5,12 +5,18 @@
 /// tokens and coins. `Coin` can be described as a secure wrapper around
 /// `Balance` type.
 module sui::coin {
+    // use std::string;
+    // use std::type_name;
     use sui::balance::{Self, Balance, Supply};
+    use sui::dynamic_field;
     use sui::tx_context::TxContext;
     use sui::object::{Self, UID};
     use sui::transfer;
+    // use sui::url::{Self, Url};
     use std::vector;
     use sui::event;
+
+    friend sui::genesis;
 
     /// For when a type passed to create_supply is not a one-time witness.
     const EBadWitness: u64 = 0;
@@ -21,10 +27,27 @@ module sui::coin {
     /// For when trying to split a coin more times than its balance allows.
     const ENotEnough: u64 = 2;
 
+    /// A share object that stores mappings from coinType to CoinMetadata 
+    /// with dynamic fields
+    struct SuiCoinRegistry has key, store {
+        id: UID
+    }
+
     /// A coin of type `T` worth `value`. Transferable and storable
     struct Coin<phantom T> has key, store {
         id: UID,
         balance: Balance<T>
+    }
+
+    /// Each Coin<T> will have a unique instance of CoinMetadata<T> that
+    /// stores the metadata for this coin type.
+    struct CoinMetadata<phantom T> has store {
+        /// Number of decimal places the coin uses.
+        /// A coin with `value ` N and `decimals` D should be shown as N / 10^D
+        /// E.g., a coin with `value` 7002 and decimals 3 should be displayed as 7.002
+        /// This is metadata for display usage only.
+        decimals: u8
+        // TODO: add name, description, logoURI, and symbol(?)
     }
 
     /// Capability allowing the bearer to mint and burn
@@ -45,6 +68,14 @@ module sui::coin {
         /// E.g., a coin with `value` 7002 and decimals 3 should be displayed as 7.002
         /// This is metadata for display usage only.
         decimals: u8
+    }
+
+    /// This should be called only once during genesis creation.
+    public(friend) fun registry(): SuiCoinRegistry {
+        SuiCoinRegistry {
+            // Use a hardcoded ID.
+            id: object::sui_coin_registry(),
+        }
     }
 
     // === Supply <-> TreasuryCap morphing and accessors  ===
@@ -175,11 +206,16 @@ module sui::coin {
     /// type, ensuring that there's only one `TreasuryCap` per `T`.
     public fun create_currency<T: drop>(
         witness: T,
+        registry: &mut SuiCoinRegistry,
         decimals: u8,
         ctx: &mut TxContext
     ): TreasuryCap<T> {
         // Make sure there's only one instance of the type T
         assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
+
+        let metadata = CoinMetadata<T> { decimals };
+
+        dynamic_field::add(&mut registry.id, b"hello", metadata);
 
         // Emit Currency metadata as an event.
         event::emit(CurrencyCreated<T> {

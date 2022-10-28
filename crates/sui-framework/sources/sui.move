@@ -7,7 +7,7 @@ module sui::sui {
     use sui::tx_context::TxContext;
     use sui::balance::Supply;
     use sui::transfer;
-    use sui::coin;
+    use sui::coin::{Self, SuiCoinRegistry};
 
     friend sui::genesis;
 
@@ -16,9 +16,9 @@ module sui::sui {
 
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
-    public(friend) fun new(ctx: &mut TxContext): Supply<SUI> {
+    public(friend) fun new(registry: &mut SuiCoinRegistry, ctx: &mut TxContext): Supply<SUI> {
         coin::treasury_into_supply(
-            coin::create_currency(SUI {}, 9, ctx)
+            coin::create_currency(SUI {}, registry, 9, ctx)
         )
     }
 

@@ -5,8 +5,10 @@ module sui::genesis {
     use std::vector;
 
     use sui::balance;
+    use sui::coin;
     use sui::sui;
     use sui::sui_system;
+    use sui::transfer;
     use sui::tx_context::TxContext;
     use sui::validator;
     use std::option;
@@ -38,7 +40,9 @@ module sui::genesis {
         validator_gas_prices: vector<u64>,
         ctx: &mut TxContext,
     ) {
-        let sui_supply = sui::new(ctx);
+        let coin_registry = coin::registry();
+        let sui_supply = sui::new(&mut coin_registry, ctx);
+        transfer::share_object(coin_registry);
         let storage_fund = balance::increase_supply(&mut sui_supply, INIT_STORAGE_FUND);
         let validators = vector::empty();
         let count = vector::length(&validator_pubkeys);

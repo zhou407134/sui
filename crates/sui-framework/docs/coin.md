@@ -8,10 +8,13 @@ tokens and coins. <code><a href="coin.md#0x2_coin_Coin">Coin</a></code> can be d
 <code>Balance</code> type.
 
 
+-  [Resource `SuiCoinRegistry`](#0x2_coin_SuiCoinRegistry)
 -  [Resource `Coin`](#0x2_coin_Coin)
+-  [Struct `CoinMetadata`](#0x2_coin_CoinMetadata)
 -  [Resource `TreasuryCap`](#0x2_coin_TreasuryCap)
 -  [Struct `CurrencyCreated`](#0x2_coin_CurrencyCreated)
 -  [Constants](#@Constants_0)
+-  [Function `registry`](#0x2_coin_registry)
 -  [Function `total_supply`](#0x2_coin_total_supply)
 -  [Function `treasury_into_supply`](#0x2_coin_treasury_into_supply)
 -  [Function `supply`](#0x2_coin_supply)
@@ -37,6 +40,7 @@ tokens and coins. <code><a href="coin.md#0x2_coin_Coin">Coin</a></code> can be d
 
 
 <pre><code><b>use</b> <a href="balance.md#0x2_balance">0x2::balance</a>;
+<b>use</b> <a href="dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="transfer.md#0x2_transfer">0x2::transfer</a>;
@@ -45,6 +49,35 @@ tokens and coins. <code><a href="coin.md#0x2_coin_Coin">Coin</a></code> can be d
 </code></pre>
 
 
+
+<a name="0x2_coin_SuiCoinRegistry"></a>
+
+## Resource `SuiCoinRegistry`
+
+A share object that stores mappings from coinType to CoinMetadata
+with dynamic fields
+
+
+<pre><code><b>struct</b> <a href="coin.md#0x2_coin_SuiCoinRegistry">SuiCoinRegistry</a> <b>has</b> store, key
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>id: <a href="object.md#0x2_object_UID">object::UID</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
 
 <a name="0x2_coin_Coin"></a>
 
@@ -74,6 +107,38 @@ A coin of type <code>T</code> worth <code>value</code>. Transferable and storabl
 </dt>
 <dd>
 
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0x2_coin_CoinMetadata"></a>
+
+## Struct `CoinMetadata`
+
+Each Coin<T> will have a unique instance of CoinMetadata<T> that
+stores the metadata for this coin type.
+
+
+<pre><code><b>struct</b> <a href="coin.md#0x2_coin_CoinMetadata">CoinMetadata</a>&lt;T&gt; <b>has</b> store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>decimals: u8</code>
+</dt>
+<dd>
+ Number of decimal places the coin uses.
+ A coin with <code>value </code> N and <code>decimals</code> D should be shown as N / 10^D
+ E.g., a coin with <code>value</code> 7002 and decimals 3 should be displayed as 7.002
+ This is metadata for display usage only.
 </dd>
 </dl>
 
@@ -182,6 +247,34 @@ For when invalid arguments are passed to a function.
 </code></pre>
 
 
+
+<a name="0x2_coin_registry"></a>
+
+## Function `registry`
+
+This should be called only once during genesis creation.
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="coin.md#0x2_coin_registry">registry</a>(): <a href="coin.md#0x2_coin_SuiCoinRegistry">coin::SuiCoinRegistry</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="coin.md#0x2_coin_registry">registry</a>(): <a href="coin.md#0x2_coin_SuiCoinRegistry">SuiCoinRegistry</a> {
+    <a href="coin.md#0x2_coin_SuiCoinRegistry">SuiCoinRegistry</a> {
+        // Use a hardcoded ID.
+        id: <a href="object.md#0x2_object_sui_coin_registry">object::sui_coin_registry</a>(),
+    }
+}
+</code></pre>
+
+
+
+</details>
 
 <a name="0x2_coin_total_supply"></a>
 
@@ -627,7 +720,7 @@ Create a new currency type <code>T</code> as and return the <code><a href="coin.
 type, ensuring that there's only one <code><a href="coin.md#0x2_coin_TreasuryCap">TreasuryCap</a></code> per <code>T</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="coin.md#0x2_coin_create_currency">create_currency</a>&lt;T: drop&gt;(witness: T, decimals: u8, ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="coin.md#0x2_coin_create_currency">create_currency</a>&lt;T: drop&gt;(witness: T, registry: &<b>mut</b> <a href="coin.md#0x2_coin_SuiCoinRegistry">coin::SuiCoinRegistry</a>, decimals: u8, ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;
 </code></pre>
 
 
@@ -638,11 +731,16 @@ type, ensuring that there's only one <code><a href="coin.md#0x2_coin_TreasuryCap
 
 <pre><code><b>public</b> <b>fun</b> <a href="coin.md#0x2_coin_create_currency">create_currency</a>&lt;T: drop&gt;(
     witness: T,
+    registry: &<b>mut</b> <a href="coin.md#0x2_coin_SuiCoinRegistry">SuiCoinRegistry</a>,
     decimals: u8,
     ctx: &<b>mut</b> TxContext
 ): <a href="coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt; {
     // Make sure there's only one instance of the type T
     <b>assert</b>!(sui::types::is_one_time_witness(&witness), <a href="coin.md#0x2_coin_EBadWitness">EBadWitness</a>);
+
+    <b>let</b> metadata = <a href="coin.md#0x2_coin_CoinMetadata">CoinMetadata</a>&lt;T&gt; { decimals };
+
+    <a href="dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> registry.id, b"hello", metadata);
 
     // Emit Currency metadata <b>as</b> an <a href="event.md#0x2_event">event</a>.
     <a href="event.md#0x2_event_emit">event::emit</a>(<a href="coin.md#0x2_coin_CurrencyCreated">CurrencyCreated</a>&lt;T&gt; {

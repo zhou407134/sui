@@ -56,7 +56,7 @@ Register the <code><a href="sui.md#0x2_sui_SUI">SUI</a></code> Coin to acquire i
 This should be called only once during genesis creation.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="sui.md#0x2_sui_SUI">sui::SUI</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(registry: &<b>mut</b> <a href="coin.md#0x2_coin_SuiCoinRegistry">coin::SuiCoinRegistry</a>, ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="sui.md#0x2_sui_SUI">sui::SUI</a>&gt;
 </code></pre>
 
 
@@ -65,9 +65,9 @@ This should be called only once during genesis creation.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="sui.md#0x2_sui_SUI">SUI</a>&gt; {
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui.md#0x2_sui_new">new</a>(registry: &<b>mut</b> SuiCoinRegistry, ctx: &<b>mut</b> TxContext): Supply&lt;<a href="sui.md#0x2_sui_SUI">SUI</a>&gt; {
     <a href="coin.md#0x2_coin_treasury_into_supply">coin::treasury_into_supply</a>(
-        <a href="coin.md#0x2_coin_create_currency">coin::create_currency</a>(<a href="sui.md#0x2_sui_SUI">SUI</a> {}, 9, ctx)
+        <a href="coin.md#0x2_coin_create_currency">coin::create_currency</a>(<a href="sui.md#0x2_sui_SUI">SUI</a> {}, registry, 9, ctx)
     )
 }
 </code></pre>

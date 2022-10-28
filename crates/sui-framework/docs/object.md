@@ -15,6 +15,7 @@ Sui object identifiers
 -  [Function `id_from_bytes`](#0x2_object_id_from_bytes)
 -  [Function `id_from_address`](#0x2_object_id_from_address)
 -  [Function `sui_system_state`](#0x2_object_sui_system_state)
+-  [Function `sui_coin_registry`](#0x2_object_sui_coin_registry)
 -  [Function `uid_as_inner`](#0x2_object_uid_as_inner)
 -  [Function `uid_to_inner`](#0x2_object_uid_to_inner)
 -  [Function `uid_to_bytes`](#0x2_object_uid_to_bytes)
@@ -114,6 +115,16 @@ Error from <code>address_from_bytes</code> when it is supplied too many or too f
 
 
 <pre><code><b>const</b> <a href="object.md#0x2_object_EAddressParseError">EAddressParseError</a>: u64 = 0;
+</code></pre>
+
+
+
+<a name="0x2_object_SUI_COIN_REGISTRY_OBJECT_ID"></a>
+
+The hardcoded ID for the singleton Sui coin registry
+
+
+<pre><code><b>const</b> <a href="object.md#0x2_object_SUI_COIN_REGISTRY_OBJECT_ID">SUI_COIN_REGISTRY_OBJECT_ID</a>: <b>address</b> = 6;
 </code></pre>
 
 
@@ -272,6 +283,34 @@ This should only be called once from <code><a href="sui_system.md#0x2_sui_system
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="object.md#0x2_object_sui_system_state">sui_system_state</a>(): <a href="object.md#0x2_object_UID">UID</a> {
     <a href="object.md#0x2_object_UID">UID</a> {
         id: <a href="object.md#0x2_object_ID">ID</a> { bytes: <a href="object.md#0x2_object_SUI_SYSTEM_STATE_OBJECT_ID">SUI_SYSTEM_STATE_OBJECT_ID</a> },
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x2_object_sui_coin_registry"></a>
+
+## Function `sui_coin_registry`
+
+Create the <code><a href="object.md#0x2_object_UID">UID</a></code> for the singleton <code>SuiCoinRegistry</code> object.
+This should only be called once from <code><a href="coin.md#0x2_coin">coin</a></code>.
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="object.md#0x2_object_sui_coin_registry">sui_coin_registry</a>(): <a href="object.md#0x2_object_UID">object::UID</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="object.md#0x2_object_sui_coin_registry">sui_coin_registry</a>(): <a href="object.md#0x2_object_UID">UID</a> {
+    <a href="object.md#0x2_object_UID">UID</a> {
+        id: <a href="object.md#0x2_object_ID">ID</a> { bytes: <a href="object.md#0x2_object_SUI_COIN_REGISTRY_OBJECT_ID">SUI_COIN_REGISTRY_OBJECT_ID</a> },
     }
 }
 </code></pre>
